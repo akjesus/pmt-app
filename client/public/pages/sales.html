@@ -1,0 +1,605 @@
+<!-- pages/Sales.html -->
+<div class="container mt-4">
+<h2>View Sales</h2>
+
+<div class="mb-3">
+  <!-- <button class="btn btn-primary" id="btnaddSales" onclick="addSales();">
+    + Add Sales
+  </button> -->
+
+  <!-- <button
+    class="btn btn-info"
+    id="btnImportCSV"
+    onclick="startimportCSV()"
+  >
+    Import CSV
+  </button> -->
+</div>
+
+<!-- DataTable -->
+<table
+  id="salesTable"
+  class="display nowrap table table-striped"
+  style="width: 100%;"
+>
+  <thead>
+    <tr>
+      <th>S/N</th>
+      <th>Date</th>
+      <th>Name</th>
+      <th>Total Amount</th>
+      <th>Sold By</th>
+      <th>Source</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    <!-- Loaded via DataTables Ajax -->
+  </tbody>
+</table>
+</div>
+<!-- Modal: Add/Edit Sales -->
+<div
+  class="modal fade"
+  id="salesModal"
+  tabindex="-1"
+  aria-labelledby="salesModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+    </div>
+  </div>
+  <input type="hidden" id="salesId"  hidden />
+
+  <div class="container mt-5">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="modal-title" id="salesModalLabel">View Sales </h5>
+        <span id="salesName"> </span>
+      </div>
+      <div class="card-body">
+        <form id="sales-form">
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="salesSource">Sale Source:</label>
+                <input type="text" class="form-control" id="salesSource" readonly>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="saleDate">Sale Date:</label>
+                <input type="text" class="form-control" id="saleDate" readonly>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="customerName">Customer Name:</label>
+                <input type="text" class="form-control" id="customerName" readonly>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="totalAmount">Total Amount:</label>
+                <input type="text" class="form-control" id="totalAmount" readonly>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-12">
+              <div class="form-group">
+                <label for="items">Items:</label>
+                <table class="table table-striped" id="items-table">
+                  <thead>
+                    <tr>
+                      <th>Item Name</th>
+                      <th>Quantity</th>
+                      <th>Unit Price</th>
+                      <th>Total Price</th>
+                    </tr>
+                  </thead>
+                  <tbody id="items-tbody">
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="card-footer">
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            Cancel
+          </button>
+          <button type="button" class="btn btn-info" onclick="generateReceiptPDF(salesId.value)">
+            Print Receipt
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Modal: Import CSV -->
+<div
+  class="modal fade"
+  id="importCSVModal"
+  tabindex="-1"
+  aria-labelledby="importCSVModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form id="importCSVForm" onsubmit="event.preventDefault();importCSV();" enctype="multipart/form-data" method="POST">
+        <div class="modal-header">
+          <h5 class="modal-title" id="importCSVModalLabel"
+            >Import Saless via CSV</h5
+          >
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          ></button>
+        </div>
+        <div class="modal-body">
+          <p>
+            Select a CSV file that matches the columns required by your
+            bulk-upload endpoint.
+          </p>
+          <div class="mb-3">
+            <label for="csvFile" class="form-label">CSV File</label>
+            <input
+              class="form-control"
+              type="file"
+              id="csvFile"
+              accept=".csv"
+              required
+            />
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-bs-dismiss="modal"
+          >
+            Cancel
+          </button>
+          <button type="submit" class="btn btn-info">Upload</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<script>
+  
+   function naira(amount) {
+  return `₦${amount.toLocaleString('en-NG')}`;
+}
+  async function customAlert(message, options = {}) {
+    return new Promise((resolve) => {
+      const customAlert = document.getElementById('custom-alert');
+      const customAlertMessage = document.getElementById('custom-alert-message');
+      const customAlertOk = document.getElementById('custom-alert-ok');
+      const customAlertCancel = document.getElementById('custom-alert-cancel');
+
+      customAlertMessage.innerText = message;
+
+      if (options.confirm) {
+        customAlertCancel.style.display = 'inline-block';
+      } else {
+        customAlertCancel.style.display = 'none';
+      }
+
+      customAlert.style.display = 'block';
+      setTimeout(() => {
+        customAlert.classList.add('show');
+      }, 10);
+
+      customAlertOk.addEventListener('click', () => {
+        customAlert.classList.remove('show');
+        setTimeout(() => {
+          customAlert.style.display = 'none';
+          resolve(true);
+        }, 500);
+      });
+
+      customAlertCancel.addEventListener('click', () => {
+        customAlert.classList.remove('show');
+        setTimeout(() => {
+          customAlert.style.display = 'none';
+          resolve(false);
+        }, 500);
+      });
+    });
+  }
+  function formatDateLong(dateStr) {
+    const date = new Date(dateStr);
+    const day = date.getDate();
+
+    const getOrdinal = (n) => {
+      if (n > 3 && n < 21) return 'th';
+      switch (n % 10) {
+        case 1: return 'st';
+        case 2: return 'nd';
+        case 3: return 'rd';
+        default: return 'th';
+      }
+    };
+
+    const month = date.toLocaleString('default', { month: 'long' });
+    const year = date.getFullYear();
+
+    return `${day}${getOrdinal(day)} ${month} ${year}`;
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    initDataTable();
+    // Form Submits
+    document.getElementById("salesForm").addEventListener("submit", function (e) {
+      e.preventDefault();
+      saveSales();
+    });
+    document.getElementById("importCSVForm").addEventListener("submit", function (e) {
+      e.preventDefault();
+      importCSV();
+    });
+  });
+
+
+  function startimportCSV() {
+    document.getElementById("csvFile").value = "";
+    new bootstrap.Modal(document.getElementById("importCSVModal")).show();
+  }
+
+
+  function initDataTable() {
+    function dateToString(date) {
+      return new Date(date).toLocaleDateString();
+  }
+    salesTable = $("#salesTable").DataTable({
+      processing: true,
+      ajax: {
+        url: API_URL + "sales",
+        dataSrc: ""
+      },
+      columns: [
+        {
+      data: null,
+      render: function(data, type, row, meta) {
+        return meta.row + 1;
+      }
+    },
+        {
+          data: function (row) {
+            return formatDateLong(row.createdAt)
+          }
+        },
+        { data: "name" },
+        { data: function(row) {
+          let grandTotal = 0;
+          row.items.map(item => {
+            const total = item.qty * item.itemId.sellingPrice;
+            grandTotal += total;
+            return total;
+          });
+          return naira(grandTotal);
+        }},
+        { data: function(row)  {
+          return row.createdBy.username;
+        }},
+        {data: "source"},
+        {
+          data: null,
+          render: function (row) {
+            return `
+              <button class="btn btn-sm btn-success me-1" onclick="viewSales(${"'" + row._id + "'" })">
+                Details
+              </button>
+              <button class="btn btn-sm btn-info" onclick="generateReceiptPDF(${"'" + row._id + "'"})">
+                Print Receipt
+              </button>
+              <button class="btn btn-sm btn-danger" onclick="removeSales(${"'" + row._id + "'"})">
+                Delete
+              </button>
+            `;
+          },
+          orderable: false
+        }
+      ],
+      dom: "Bfrtip",
+      buttons: [
+        "pageLength",
+        { extend: "csvHtml5", title: "Sales_Export" },
+        { extend: "excelHtml5", title: "Sales_Export" },
+        { extend: "print", title: "Sales List" }
+      ],
+      responsive: true,
+      pageLength: 10,
+      lengthMenu: [
+        [10, 25, 50, 100, -1],
+        [10, 25, 50, 100, "All"]
+      ]
+    });
+  }
+
+
+
+  // Clear Form
+  function clearSalesForm() {
+    document.getElementById("salesId").value = "";
+    document.getElementById("description").value = "";
+    document.getElementById("quantity").value = "";
+    document.getElementById("amount").value = "";
+    document.getElementById("categorySelect").innerHTML = "";
+ 
+  }
+
+  // Load Category dropdown
+  function loadDropdowns(selectedCat) {
+
+    fetch(API_URL + "categories")
+      .then((res) => res.json())
+      .then((cats) => {
+        const catSel = document.getElementById("categorySelect");
+        cats.forEach(d => {
+          let opt = document.createElement("option");
+          opt.value = d._id;
+          opt.textContent = d.name; 
+          catSel.appendChild(opt);
+        });
+      })
+      .catch(() => customAlert("Failed to load Categories."));
+  }
+
+  // Edit Sales
+  window.viewSales = function (id) {
+       if ($('.myRow').length) {
+      $('.myRow').remove();
+    }
+    fetch(API_URL + "sales/" + id)
+      .then((res) => res.json())
+      .then((sales) => {
+        let totalAmount = 0;
+        document.getElementById("salesSource").value = sales.source;
+        document.getElementById("salesName").innerHTML = sales.name;
+        document.getElementById("saleDate").value = formatDateLong(sales.createdAt);
+        document.getElementById("customerName").value = sales._id;
+        document.getElementById("salesId").value = sales._id;
+        const itemsTbody = document.getElementById('items-tbody');
+        sales.items.forEach(item => {
+          totalAmount += item.itemId.sellingPrice * item.qty;
+          const row = document.createElement('tr');
+          row.setAttribute("class", "myRow");
+          row.innerHTML = `
+      <td>${item.name}</td>
+      <td>${item.qty}</td>
+      <td>${naira(item.itemId.sellingPrice)}</td>
+      <td>${naira(item.itemId.sellingPrice * item.qty)}</td>
+    `;
+          itemsTbody.appendChild(row);
+        });
+        document.getElementById("totalAmount").value = naira(totalAmount);
+
+        document.getElementById("salesModalLabel").textContent =
+          "View Sales Details";
+        new bootstrap.Modal(document.getElementById("salesModal")).show();
+      })
+      .catch((error) => customAlert(error));
+  };
+
+  // Save Sales
+  async function saveSales() {
+    const id = document.getElementById("salesId").value;
+    const payload = {
+      category: document.getElementById("categorySelect").value,
+      description: document.getElementById("description").value.trim(),
+      amount: document.getElementById("amount").value.trim(),
+      source: document.getElementById("source").value.trim(),
+      category: document.getElementById("categorySelect").value,
+    };
+
+    if (id) {
+      // Update
+      try {
+        const res = await fetch(API_URL + "sales/" + id, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json",
+          'Authorization': `Bearer ${token}`,
+         },
+        body: JSON.stringify(payload)
+      });
+      const body = await res.json();
+      if(body.error) return customAlert(body.error)
+      bootstrap.Modal.getInstance(document.getElementById("salesModal")).hide();
+          customAlert("Sales updated successfully.");
+          salesTable.ajax.reload(null, false);
+      }
+      catch(error) {
+        customAlert(error)
+      }
+      
+    } else {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await fetch(API_URL + "sales", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", 
+                "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify(payload)
+              });
+        const body = await res.json();
+          if(body.error) return customAlert(body.error)
+          bootstrap.Modal.getInstance(
+            document.getElementById("salesModal")
+          ).hide();
+          customAlert("Sales added successfully.");
+          salesTable.ajax.reload(null, false);
+    }
+      
+        catch(error) {
+      customAlert("Error saving sales:", error.message);
+      bootstrap.Modal.getInstance(document.getElementById("salesModal")).hide();
+        }
+  }
+
+  };
+
+  // Delete Sales
+async function removeSales(id) {
+    const proceed = await customAlert('Are you sure you want to delete this sales?', { confirm: true })
+  if (!proceed) return
+    fetch(API_URL + "sales/" + id, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json", 
+                "Authorization": `Bearer ${token}`
+              }
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if(data.error) return customAlert(data.error)
+        customAlert(data.message || "Sales deleted successfully.");
+        salesTable.ajax.reload(null, false);
+      })
+      .catch(() => customAlert("Failed to delete sales."));
+  }
+  // Import CSV
+  function startimportCSV() {
+    document.getElementById("csvFile").value = "";
+    new bootstrap.Modal(document.getElementById("importCSVModal")).show();
+  }
+
+  function importCSV() {
+    const fileInput = document.getElementById("csvFile");
+    if (!fileInput.files[0]) {
+      customAlert("Please select a CSV file.");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("file", fileInput.files[0]);
+
+    fetch(API_URL + "student/bulk-upload", {
+      method: "POST",
+      body: formData
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        bootstrap.Modal.getInstance(
+          document.getElementById("importCSVModal")
+        ).hide();
+        if(data.error)
+       {customAlert(data.error)} 
+        customAlert(data.message || "CSV Import completed.");
+        salesTable.ajax.reload(null, false);
+      })
+      .catch(() => customAlert("Failed to import CSV."));
+  }
+
+  async function generateReceiptPDF(id) {
+    console.log("Generating receipt for ID:", id);
+    const logoImage = new Image();
+    let logoBase64;
+    logoImage.src = './assets/logo_receipt.png'; // or base64 directly
+    logoImage.onload = function () {
+      const canvas = document.createElement('canvas');
+      canvas.width = logoImage.width;
+      canvas.height = logoImage.height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(logoImage, 0, 0);
+      logoBase64 = canvas.toDataURL('image/png');
+    };
+    const res = await fetch(API_URL + "sales/receipt/" + id, {
+      method: "GET",
+      headers: { "Content-Type": "application/json",
+      Authorization: `Bearer ${token}` }
+    });
+      const data = await res.json();
+      const { jsPDF } = window.jspdf;
+
+    // Width for 80mm receipt: approx 80mm = 226.77 points
+    const doc = new jsPDF({
+      unit: 'pt',
+      format: [226.77, 1000], // dynamic height
+      orientation: 'portrait'
+    });
+
+    let y = 20;
+
+    // Add Logo (Optional)
+    if (logoBase64) {
+      doc.addImage(logoBase64, 'PNG', 60, y, 100, 40); // adjust size & position
+      y += 50;
+    }
+
+    // Business Info
+    doc.setFontSize(10);
+    doc.setFont(undefined, "bold");
+    doc.text("Zijag Educational Hub", 113, y, { align: "center" });
+    y += 12;
+    doc.setFont(undefined, "normal");
+    doc.text("Nike Road, Enugu", 113, y, { align: "center" });
+    y += 12;
+    doc.text("Phone: 07066377348", 113, y, { align: "center" });
+    y += 20;
+
+    // Date
+    doc.setFontSize(8);
+    doc.text(`Date: ${new Date().toLocaleString()}`, 10, y);
+    y += 12;
+
+    // Divider
+    doc.line(10, y, 216, y);
+    y += 10;
+
+    // Table headers
+    doc.setFont(undefined, "bold");
+    doc.text("Item", 10, y);
+    doc.text("Qty", 125, y);
+    doc.text("Price", 145, y);
+    doc.text("Total", 180, y);
+    y += 12;
+    doc.setFont(undefined, "normal");
+
+    let grandTotal = 0;
+    data.items.forEach(item => {
+      const total = item.qty * item.itemId.sellingPrice;
+      grandTotal += total;
+      let itemName = item.name.length > 28 ? item.name.substring(0, 28) + '…' : item.name;
+      doc.text(itemName, 10, y);
+      doc.text(item.qty.toString(), 125, y);
+      doc.text(`N${item.itemId.sellingPrice.toLocaleString('en-NG')}`, 145, y);
+      doc.text(`N${total.toLocaleString('en-NG')}`, 180, y);
+      y += 12;
+    });
+
+    y += 10;
+    doc.line(10, y, 216, y);
+    y += 12;
+
+    doc.setFont(undefined, "bold");
+    doc.text("Total:", 140, y);
+    doc.text(`N${grandTotal.toLocaleString('en-NG')}`, 180, y);
+
+    // Footer
+    y += 30;
+    doc.setFontSize(9);
+    doc.setFont(undefined, "italic");
+    doc.text("Thank you for shopping!", 113, y, { align: "center" });
+
+    // Save
+    doc.save(`${new Date().toLocaleString()}` + "_receipt.pdf");
+    }
+
+
+    </script>
+<script>
+  /* Re-init DataTable after dynamic load if needed */
+  setTimeout(initDataTable, 100);
+</script>

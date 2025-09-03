@@ -1,0 +1,302 @@
+  <div class="container mt-4">
+    <h2>Manage User</h2>
+    <div class="mb-3">
+      <button class="btn btn-primary" id="btnAddUser">+ Add User</button>
+    </div>
+
+    <!-- User DataTable -->
+    <table id="userTable" class="display nowrap table table-striped" style="width: 100%;">
+      <thead>
+        <tr>
+          <th>S/N</th>
+          <th>Role</th>
+          <th>First Name</th>
+          <th>Last Name</th>
+          <th>Username</th>
+          <th>Email</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody><!-- Filled by DataTables --></tbody>
+    </table>
+  </div>
+
+  <!-- Modal: Add/Edit User -->
+  <div
+    class="modal fade"
+    id="userModal"
+    tabindex="-1"
+    aria-labelledby="userModalLabel"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <form id="UserForm">
+          <div class="modal-header">
+            <h5 class="modal-title" id="userModalLabel">Add User</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <input type="hidden" id="userId" />
+            
+            <!-- First Name -->
+            <div class="mb-3">
+              <label for="userFirstName" class="form-label">First Name</label>
+              <input type="text" class="form-control" id="userFirstName" required />
+            </div>
+
+            <!-- Last Name -->
+            <div class="mb-3">
+              <label for="userLastName" class="form-label">Last Name</label>
+              <input type="text" class="form-control" id="userLastName" required />
+            </div>
+
+            <!-- Email -->
+            <div class="mb-3">
+              <label for="userEmail" class="form-label">Email</label>
+              <input type="email" class="form-control" id="userEmail" required />
+            </div>
+
+            <!-- Username -->
+            <div class="mb-3">
+              <label for="userUsername" class="form-label">Username</label>
+              <input type="text" class="form-control" id="userUsername" required />
+            </div>
+
+            <!-- Password -->
+            <div class="mb-3">
+              <label for="userPassword" class="form-label">Password (optional)</label>
+              <input type="password" class="form-control" id="userPassword" />
+            </div>
+
+
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              Cancel
+            </button>
+            <button type="submit" class="btn btn-success">Save</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+
+
+  <script>
+    userTable;
+
+    async function customAlert(message, options = {}) {
+        return new Promise((resolve) => {
+          const customAlert = document.getElementById('custom-alert');
+          const customAlertMessage = document.getElementById('custom-alert-message');
+          const customAlertOk = document.getElementById('custom-alert-ok');
+          const customAlertCancel = document.getElementById('custom-alert-cancel');
+
+          customAlertMessage.innerText = message;
+
+          if (options.confirm) {
+            customAlertCancel.style.display = 'inline-block';
+          } else {
+            customAlertCancel.style.display = 'none';
+          }
+
+          customAlert.style.display = 'block';
+          setTimeout(() => {
+            customAlert.classList.add('show');
+          }, 10);
+
+          customAlertOk.addEventListener('click', () => {
+            customAlert.classList.remove('show');
+            setTimeout(() => {
+              customAlert.style.display = 'none';
+              resolve(true);
+            }, 500);
+          });
+
+          customAlertCancel.addEventListener('click', () => {
+            customAlert.classList.remove('show');
+            setTimeout(() => {
+              customAlert.style.display = 'none';
+              resolve(false);
+            }, 500);
+          });
+        });
+      }
+
+
+     function initUserPage() {
+      initUserDataTable();
+
+      // Add user
+      document.getElementById("btnAddUser").addEventListener("click", function() {
+        clearUserForm();
+        document.getElementById("userModalLabel").textContent = "Add User";
+        new bootstrap.Modal(document.getElementById("userModal")).show();
+      });
+
+
+
+      // user form submit
+      document.getElementById("UserForm").addEventListener("submit", function(e) {
+        e.preventDefault();
+        saveUser();
+      });
+    }
+
+    function initUserDataTable() {
+      userTable = $("#userTable").DataTable({
+        processing: true,
+        ajax: {
+          url: API_URL + "auth",
+          dataSrc: ""
+        },
+        columns: [
+           {
+            data: null,
+            render: function (data, type, row, meta) {
+              return meta.row + 1;
+            }
+          },
+          { data: "role" },
+          { data: "firstName" },
+          { data: "lastName" },
+          { data: "username" },
+          { data: "email" },
+          {
+            data: null,
+            render: function (row) {
+              return `
+                <button class="btn btn-sm btn-primary me-1" onclick="editUser(${"'" + row._id + "'"})">Edit</button>
+                <button class="btn btn-sm btn-${row.role ==="Admin"? "success" : "warning"}" onclick="makeAdmin(${"'"+ row._id + "'"})">${row.role ==="Admin"? "Admin" : "Make Admin"}</button>
+              `;
+            },
+            orderable: false
+          }
+        ],
+        dom: "Bfrtip",
+        buttons: [
+          "pageLength",
+          { extend: "csvHtml5", title: "User_Export" },
+          { extend: "excelHtml5", title: "User_Export" },
+          { extend: "print", title: "User List" }
+        ],
+        responsive: true,
+        pageLength: 10,
+        lengthMenu: [
+          [10, 25, 50, -1],
+          [10, 25, 50, "All"]
+        ]
+      });
+    }
+
+    function clearUserForm() {
+      document.getElementById("userFirstName").value = "";
+      document.getElementById("userLastName").value = "";
+      document.getElementById("userEmail").value = "";
+      document.getElementById("userUsername").value = "";
+      document.getElementById("userPassword").value = "";
+
+    }
+
+
+    function editUser(id) {
+      // fetch /api/user/:id
+      fetch(API_URL + "auth/" + id)
+        .then(res => res.json())
+        .then(user => {
+          document.getElementById("userId").value = user._id;
+          document.getElementById("userFirstName").value = user.firstName || "";
+          document.getElementById("userLastName").value = user.lastName || "";
+          document.getElementById("userEmail").value = user.email || "";
+          document.getElementById("userUsername").value = user.username || "";
+          // leave password blank if we only update if user enters new
+          document.getElementById("userPassword").value = "";
+
+          document.getElementById("userModalLabel").textContent = "Edit User";
+          new bootstrap.Modal(document.getElementById("userModal")).show();
+        })
+        .catch((error) => customAlert(error));
+    }
+
+    function saveUser() {
+      const id = document.getElementById("userId").value;
+      const payload = {
+        firstName: document.getElementById("userFirstName").value,
+        lastName: document.getElementById("userLastName").value,
+        email: document.getElementById("userEmail").value,
+        username: document.getElementById("userUsername").value,
+        password: document.getElementById("userPassword").value,
+      };
+
+
+      if (id) {
+        // Update
+        fetch(API_URL + "auth/" + id, {
+          method: "PATCH",
+         headers: {
+            "Content-Type": "application/json",
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify(payload)
+        })
+          .then(res => res.json())
+          .then(data => {
+            if(data.error) {
+              customAlert(data.error);
+              return;
+            }
+            bootstrap.Modal.getInstance(document.getElementById("userModal")).hide();
+            customAlert(data.message || "User updated successfully.");
+            userTable.ajax.reload(null, false);
+          })
+          .catch(() => customAlert("Failed to update User."));
+      } else {
+        // Create
+        fetch(API_URL + "auth/register", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify(payload)
+        })
+          .then(res => res.json())
+          .then(data => {
+            bootstrap.Modal.getInstance(document.getElementById("userModal")).hide();
+            customAlert(data.message || "user created successfully.");
+            userTable.ajax.reload(null, false);
+          })
+          .catch(() => customAlert("Failed to create user."));
+      }
+    }
+
+    async function makeAdmin(id) {
+      const proceed = await customAlert('Are you sure you want to make this User admin?', { confirm: true })
+      if (!proceed) return
+      fetch(API_URL + "auth/make-admin/" + id, { method: "PATCH", 
+      headers: {
+          "Content-Type": "application/json",
+          'Authorization': `Bearer ${token}`,
+        } }, )
+        .then(res => res.json())
+        .then(data => {
+          if (data.error) {
+            customAlert(data.error);
+            return;
+          }
+          customAlert(data.message || "User deleted.");
+          userTable.ajax.reload(null, false);
+        })
+        .catch(() => customAlert("Failed to delete user."));
+    }
+  </script>
+<script>
+    /* Re-init DataTable after dynamic load if needed */
+    setTimeout(initUserPage(), 100);
+</script>
+  

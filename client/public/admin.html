@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Peace Extra Comfort</title>
+    <link href="./css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="./css/fontawesome.min.css" />
+    <link rel="stylesheet" href="./css/fontawesome.css" />
+    <link rel="stylesheet" href="./fontawesome-free-6.7.2-web/css/all.min.css" />
+    <link rel="icon" href="/assets/icon.jpeg" type="image/x-icon" />
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script> -->
+    <script src="./js/jspdf.js"></script>
+    <script src="./js/pages.js"></script>
+
+    <style>
+      a:link {
+        text-decoration: none;
+      }
+      body {
+        background-color: #f8f9fa;
+      }
+      .sidebar {
+        height: 100vh;
+        background-color: #343a40;
+        color: white;
+      }
+      .sidebar a {
+        color: white;
+        text-decoration: none;
+        padding: 15px;
+        display: block;
+      }
+      .sidebar a:hover {
+        background-color: #495057;
+      }
+      .content {
+        padding: 20px;
+        margin-top: 60px;
+      }
+      .stat-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+      }
+      .stat-box {
+        padding: 20px;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        text-align: center;
+      }
+      .top-nav {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 20px;
+        background: white;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+      }
+      .top-nav .icon {
+        margin-left: 15px;
+        font-size: 20px;
+        cursor: pointer;
+      }
+      .profile-img {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+      }
+      .logo {
+        display: flex;
+        align-items: center;
+      }
+      .logo img {
+        width: 40px;
+        height: 40px;
+        margin-right: 10px;
+      }
+      .container {
+        max-width: 95% !important;
+      }
+      .username {
+  font-weight: bold;
+  font-size: 16px;
+  color: #333;
+  text-transform: capitalize;
+}
+
+/* Optional: Add a hover effect */
+.username:hover {
+  color: #666;
+  cursor: pointer;
+}
+
+/* Optional: Add a style for the username when it's linked */
+.username a {
+  text-decoration: none;
+  color: #337ab7;
+}
+
+.username a:hover {
+  color: #23527c;
+}
+.custom-alert {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1;
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+}
+
+.custom-alert.show {
+  display: block;
+  opacity: 1;
+}
+
+.custom-alert-content {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.5);
+  background-color: #fff;
+  padding: 40px;
+  width: 500px;
+  max-width: 90%;
+  border-radius: 10px;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s ease-in-out;
+}
+
+.custom-alert.show .custom-alert-content {
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.custom-alert-content button {
+  background-color: #0D6EFD;
+  color: #fff;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 18px;
+}
+
+.custom-alert-content button:hover {
+  background-color: #0948a7;
+}
+
+#custom-alert-message {
+  font-size: 20px;
+  margin-bottom: 20px;
+}
+#custom-alert-cancel {
+  background-color: #f44336;
+}
+
+#custom-alert-cancel:hover {
+  background-color: #fa0f0f;
+}
+.day-report {
+      background: #fff;
+      padding: 20px;
+      margin-bottom: 20px;
+      border-left: 5px solid #4caf50;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .day-report h2 {
+      margin-top: 0;
+    }
+    table {
+      width: 100%;
+      margin-top: 10px;
+      border-collapse: collapse;
+    }
+    th, td {
+      padding: 8px;
+      border-bottom: 1px solid #ddd;
+      text-align: left;
+    }
+    .totals {
+      margin-top: 10px;
+      font-weight: bold;
+    }
+    .net-positive {
+      color: green;
+    }
+    .net-negative {
+      color: red;
+    }
+.body { font-family: Arial, sans-serif; padding: 20px; }
+.table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+.th, .td { border: 1px solid #ccc; padding: 8px; }
+.total { font-weight: bold; }
+.button { padding: 8px 12px; }
+
+    </style>
+    <script>
+       async function customAlert(message, options = {}) {
+          return new Promise((resolve) => {
+            const customAlert = document.getElementById('custom-alert');
+            const customAlertMessage = document.getElementById('custom-alert-message');
+            const customAlertOk = document.getElementById('custom-alert-ok');
+            const customAlertCancel = document.getElementById('custom-alert-cancel');
+
+            customAlertMessage.innerText = message;
+
+            if (options.confirm) {
+              customAlertCancel.style.display = 'inline-block';
+            } else {
+              customAlertCancel.style.display = 'none';
+            }
+
+            customAlert.style.display = 'block';
+            setTimeout(() => {
+              customAlert.classList.add('show');
+            }, 10);
+
+            customAlertOk.addEventListener('click', () => {
+              customAlert.classList.remove('show');
+              setTimeout(() => {
+                customAlert.style.display = 'none';
+                resolve(true);
+              }, 500);
+            });
+
+            customAlertCancel.addEventListener('click', () => {
+              customAlert.classList.remove('show');
+              setTimeout(() => {
+                customAlert.style.display = 'none';
+                resolve(false);
+              }, 500);
+            });
+          });
+        }
+      async function logout() {
+        const proceed = await customAlert('Are you sure you want to logout?', { confirm: true });
+        if (!proceed) return
+
+          localStorage.removeItem("token"); // Remove stored token
+          window.location.href = "/admin-login.html"; // Redirect to login
+          console.log(process.env)
+      }
+
+    </script>
+  </head>
+  <body>
+    <div id="custom-alert" class="custom-alert">
+      <div class="custom-alert-content">
+        <p id="custom-alert-message"></p>
+        <button id="custom-alert-ok">OK</button>
+        <button id="custom-alert-cancel" style="display: none;">Cancel</button>
+      </div>
+    </div>
+<br>
+<br>
+    <div class="top-nav">
+      <div class="logo">
+        <img src="/assets/icon.png" alt="Logo" />
+        <h5>Peace Extra Comfort</h5>
+      </div>
+      <div onclick="logout()">
+        <span id="username" class ="username"> <i class="fas fa-user"></i>  </span>
+        <img src="/assets/icon.png" alt="Profile" class="profile-img username" />
+      </div>
+    </div>
+    <div class="container-fluid">
+      <div class="row">
+        <nav class="col-md-2 sidebar p-3">
+          <h4 class="text-center">Admin Dashboard</h4>
+          <a
+            href="#dashboard"
+            data-page="dashboard"
+            id="db"
+            onclick="loadPage(this.getAttribute('data-page'))"
+            ><i class="fas fa-house"></i> Dashboard</a
+          >
+          <a
+            href="#loading-info"
+            data-page="loading-info"
+            onclick="loadPage(this.getAttribute('data-page'))"
+            ><i class="fas fa-chart-pie"></i> Loading Info</a
+          >
+      
+          <a
+            href="#bus-expenses"
+            data-page="bus-expenses"
+            onclick="loadPage(this.getAttribute('data-page'))"
+            ><i class="fa-solid fa-money-bills"></i> Bus Expenses</a
+          >
+       
+          
+          <a
+            href="#reports-detail"
+            data-page="reports-detail"
+            onclick="loadPage(this.getAttribute('data-page'))"
+            ><i class="fas fa-chart-line"></i> Reports </a
+          >
+          <a
+            href="#users"
+            data-page="users"
+            onclick="loadPage(this.getAttribute('data-page'))"
+            ><i class="fas fa-users"></i> Manage Users</a
+          >
+          
+          <a href="#/admin/logout" id="logout-btn"
+            ><i class="fas fa-sign-out-alt"></i> Logout</a
+          >
+        </nav>
+
+        <!-- Main Content (Dynamically Updated) -->
+        <main
+          class="col-md-10"
+          id="main-content"
+          style="
+            margin-top: 70px; 
+            padding: 0px;
+          "
+        >
+          <h2>Welcome to the Admin Dashboard</h2>
+          <p>Loading</p>
+        </main>
+      </div>
+    </div>
+    <!-- Bootstrap Modal for Create/Edit Forms -->
+    <div
+      class="modal fade"
+      id="adminModal"
+      tabindex="-1"
+      aria-labelledby="modalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="modalLabel">Modal Title</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body" id="modal-body">
+            <!-- Content will be loaded here dynamically -->
+          </div>
+        </div>
+      </div>
+    </div>
+    <script src="/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/jquery.min.js"></script>
+    <script src="/js/admin.js"></script>
+
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="/css/jquery.dataTables.min.css" />
+    <link rel="stylesheet" href="/css/buttons.dataTables.min.css" />
+
+    <!-- DataTables JS -->
+    <script src="/js/jquery.dataTables.min.js"></script>
+    <!-- DataTables Buttons + Export Dependencies -->
+    <script src="/js/dataTables.buttons.min.js"></script>
+    <script src="/js/buttons.html5.min.js"></script>
+    <script src="/js/buttons.print.min.js"></script>
+    <script src="/js/jszip.min.js"></script>
+    <script src="/js/pdfmake.min.js"></script>
+    <script src="/js/vfs_fonts.js"></script>
+    <script src="/fontawesome-free-6.7.2-web/js/all.min.js"></script>
+  </body>
+</html>

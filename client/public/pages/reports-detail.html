@@ -1,0 +1,767 @@
+
+<div class="container mt-4">
+  <!-- <h2>Detailed Reports</h2>
+<button class="btn btn-primary" onclick="customAlert('Coming Soon!')">Export to CSV</button>
+<button class="btn btn-secondary" onclick="customAlert('Coming Soon!')">Export to PDF</button> -->
+  <!-- Select Type Selection-->
+   <br>
+   <br>
+  <div class="mb-3">
+    <label for="typeSelect" class="form-label">Type:</label>
+    <select id="typeSelect" class="form-select" style="width: 200px; display: inline-block;">
+      <option value="">Select Type</option>
+      <option value="bus-performance">Bus Performance</option>
+      <option value="expenses">Expenses</option>
+      <option value="summary">Summary</option>
+    </select>
+    <!-- Date range -->
+    <label for="startDate" class="form-label ms-3">Start Date:</label>
+    <input type="date" id="startDate" class="form-control" style="width: 200px; display: inline-block;" />
+
+    <label for="endDate" class="form-label ms-3">End Date:</label>
+    <input type="date" id="endDate" class="form-control" style="width: 200px; display: inline-block;" />
+    <br>
+    <br>
+    <h2>Bus Range</h2>
+    <label for="startBus" class="form-label ms-3">From:</label>
+    <select name="startBus" id="startBus"  class="form-select" style="width: 300px; display: inline-block;"></select>
+    <label for="stopBus" class="form-label ms-3">To:</label>
+    <select name="stopBus" id="stopBus"  class="form-select" style="width: 300px; display: inline-block;"></select>
+    <br>
+    <br>
+
+    <button id="btnLoadReport" class="btn btn-primary" disabled>Load Report</button>
+    
+
+  </div>
+
+  <!-- Report Info Section -->
+  <div id="incomeInfoSection" style="display: none;" class="mb-4">
+    <h4>Report Info: <span id ="reportInfo"></span></h4>
+    <p><strong>Report Type:</strong> <span id="reportType">Top 3 Income Sources</span></p>
+    <p><strong>Item:</strong> <span> Income</span></p>
+    <p><strong>Amount Generated:</strong> <span id="incomeTotalGenerated"></span></p>
+  </div>
+
+  <div id="summaryInfoSection" style="display: none;" class="mb-4">
+    <h4>Report Info: <span id="summaryHeader"></span></h4>
+    <p><strong>Report Type: Summary</strong> <span id="reportType"></span></p>
+  </div>
+
+  <div id="expensesInfoSection" style="display: none;" class="mb-4">
+    <h4>Report Info: <span id="expensesHeaderMain"></span></h4>
+    <p><strong>Report Type:</strong> <span> Top 3 Expenses Sources</span></p>
+    <p><strong>Item:</strong> <span>Expenses</span></p>
+    <p id="incomeItem"><strong>Amount Spent:</strong> <span id="expensesTotalAmount"></span></p>
+  </div>
+
+  <div id="reportInfoSection" style="display: none;" class="mb-4">
+    <h4>Report Info: <span id="salesHeader"></span></h4>
+    <p><strong>Report Type:</strong> <span>Bus Performance</span></p>
+    <p><strong>Bus Range:</strong> <span id="busRange"></span></p>
+    <p><strong>Report Date:</strong> <span id="reportDate"></span></p>
+  </div>
+
+  <!-- Summary Cards -->
+  <div id="incomeSummaryCards" style="display: none;">
+    <div class="row">
+      <div class="col-md-3">
+        <div class="card text-white bg-primary mb-3">
+          <div class="card-header" id="incomeHeader0">Total Income</div>
+          <div class="card-body">
+            <h5 class="card-title" id="incomeHeader0Val">0</h5>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card text-white bg-success mb-3">
+          <div class="card-header" id = "incomeHeader1">Total Income Quantity </div>
+          <div class="card-body">
+            <h5 class="card-title" id="incomeHeader1Val">0</h5>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card text-white bg-info mb-3">
+          <div class="card-header" id = "incomeHeader2">Category Sales</div>
+          <div class="card-body">
+            <h5 class="card-title" id="incomeHeader2Val">0</h5>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card text-white bg-warning mb-3">
+          <div class="card-header" id = "incomeHeader3">Total Income from Sources</div>
+          <div class="card-body">
+            <h5 class="card-title" id="totalIncomeSources">0</h5>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="salesSummaryCards" style="display: none;">
+    <div class="row">
+      <div class="col-md-3">
+        <div class="card text-white bg-primary mb-3">
+          <div class="card-header" id="salesHeader0">Total Sales</div>
+          <div class="card-body">
+            <h5 class="card-title" id="totalSales">0</h5>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card text-white bg-success mb-3">
+          <div class="card-header" id="salesHeader1">Total Sales Quantity </div>
+          <div class="card-body">
+            <h5 class="card-title" id="totalSalesQuantity">0</h5>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card text-white bg-info mb-3">
+          <div class="card-header" id="salesHeader2">Category Sales</div>
+          <div class="card-body">
+            <h5 class="card-title" id="categoryTotalsales">0</h5>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card text-white bg-warning mb-3">
+          <div class="card-header" id="salesHeader3">Average Sales Per Day</div>
+          <div class="card-body">
+            <h5 class="card-title" id="averageSales">0</h5>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="expensesSummaryCards" style="display: none;">
+    <div class="row">
+      <div class="col-md-3">
+        <div class="card text-white bg-primary mb-3">
+          <div class="card-header" id="expensesHeader0">Expenses</div>
+          <div class="card-body">
+            <h5 class="card-title" id="expensesHeader0Val">0</h5>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card text-white bg-success mb-3">
+          <div class="card-header" id="expensesHeader1">Expenses</div>
+          <div class="card-body">
+            <h5 class="card-title" id="expensesHeader1Val">0</h5>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card text-white bg-info mb-3">
+          <div class="card-header" id="expensesHeader2">Expenses</div>
+          <div class="card-body">
+            <h5 class="card-title" id="expensesHeader2Val">0</h5>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card text-white bg-warning mb-3">
+          <div class="card-header" id="expensesHeader3">Total Expenses from Sources</div>
+          <div class="card-body">
+            <h5 class="card-title" id="expensesHeader3Val">0</h5>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="summaryCards" style="display: none;">
+  <div class="row">
+    <div class="col-md-3">
+      <div class="card text-white bg-primary mb-3">
+        <div class="card-header" id="incomeHeader0">Total Sales</div>
+        <div class="card-body">
+          <h5 class="card-title" id="totalSummary">0</h5>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card text-white bg-success mb-3">
+        <div class="card-header" id="incomeHeader1">Total Sales Quantity </div>
+        <div class="card-body">
+          <h5 class="card-title" id="totalSummaryQuantity">0</h5>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card text-white bg-info mb-3">
+        <div class="card-header" id="incomeHeader2">Category Sales</div>
+        <div class="card-body">
+          <h5 class="card-title" id="reportBestAmountVal">0</h5>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card text-white bg-warning mb-3">
+        <div class="card-header" id="incomeHeader3">Average Sales Per Day</div>
+        <div class="card-body">
+          <h5 class="card-title" id="reportAverageSales">0</h5>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <!-- Selling Items Breakdown Table -->
+  <div id="reportBreakdownSection" style="display: none;">
+    <h4>Bus Performance Breakdown:</h4>
+    <table class="table">
+      <thead>
+      <tr>
+        <th>Name</th>
+        <th>Passenger Income</th>
+        <th>Passenger Count</th>
+        <th>Expenses</th>
+        <th>Net Income</th>
+      </tr>
+      </thead>
+      <tbody id="reportBreakdownBody">
+      <!-- filled by JS -->
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Sales Breakdown Section 2 -->
+    <div id="salesBodySection" style="display: none;">
+      <h4>Sales Breakdown:</h4> <span id="salesOnlyHeader"></span>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Name</th>
+            <th>Source</th>
+            <th>Total Sales</th>
+          </tr>
+        </thead>
+        <tbody id="salesBody">
+          <!-- filled by JS -->
+        </tbody>
+      </table>
+    </div>
+
+  <div id="reportBreakdownSection2" style="display: none;">
+    <h4>Worst Selling Items Breakdown:</h4>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Amount Generated</th>
+          <th>Quantity</th>
+        </tr>
+      </thead>
+      <tbody id="reportBreakdownBody2">
+        <!-- filled by JS -->
+      </tbody>
+    </table>
+  </div>
+  
+  <div id="expensesBreakdownSection" style="display: none;">
+    <h4>Summary of Daily Transactions</h4>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Income</th>
+          <th>Expenses</th>
+        </tr>
+      </thead>
+      <tbody id="breakdownTbody3">
+        <!-- filled by JS -->
+      </tbody>
+    </table>
+  </div>
+
+  <div id="summaryBreakdownSection" style="display: none;">
+    <table class="table">
+      <thead>
+      <tr>
+        <th >Date</th>
+        <th >Income</th>
+        <th >Expenses</th>
+      </tr>
+      </thead>
+      <tbody id="summarybreakdownBody">
+      <!-- filled by JS -->
+      </tbody>
+    </table>
+  </div>
+<div id="reportContainer" style="display: none;"></div>
+</div>
+
+  <script>
+    function naira(amount) {
+  return `₦${amount.toLocaleString('en-NG')}`;
+    }
+
+    function formatDateLong(dateStr) {
+        const date = new Date(dateStr);
+        const day = date.getDate();
+
+        const getOrdinal = (n) => {
+          if (n > 3 && n < 21) return 'th';
+          switch (n % 10) {
+            case 1: return 'st';
+            case 2: return 'nd';
+            case 3: return 'rd';
+            default: return 'th';
+          }
+        };
+
+        const month = date.toLocaleString('default', { month: 'long' });
+        const year = date.getFullYear();
+
+        return `${day}${getOrdinal(day)} ${month} ${year}`;
+      }
+  async function customAlert(message, options = {}) {
+    return new Promise((resolve) => {
+      const customAlert = document.getElementById('custom-alert');
+      const customAlertMessage = document.getElementById('custom-alert-message');
+      const customAlertOk = document.getElementById('custom-alert-ok');
+      const customAlertCancel = document.getElementById('custom-alert-cancel');
+
+      customAlertMessage.innerText = message;
+
+      if (options.confirm) {
+        customAlertCancel.style.display = 'inline-block';
+      } else {
+        customAlertCancel.style.display = 'none';
+      }
+
+      customAlert.style.display = 'block';
+      setTimeout(() => {
+        customAlert.classList.add('show');
+      }, 10);
+
+      customAlertOk.addEventListener('click', () => {
+        customAlert.classList.remove('show');
+        setTimeout(() => {
+          customAlert.style.display = 'none';
+          resolve(true);
+        }, 500);
+      });
+
+      customAlertCancel.addEventListener('click', () => {
+        customAlert.classList.remove('show');
+        setTimeout(() => {
+          customAlert.style.display = 'none';
+          resolve(false);
+        }, 500);
+      });
+    });
+  }
+
+  async function exportToPDF() {
+      const { jsPDF } = window.jspdf;
+
+      const container = document.getElementById("reportContainer");
+      const canvas = await html2canvas(container, { scale: 2 });
+
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+
+      const imgProps = pdf.getImageProperties(imgData);
+      const imgRatio = imgProps.width / imgProps.height;
+      const pdfWidth = pageWidth;
+      const pdfHeight = pageWidth / imgRatio;
+
+      let position = 10;
+      if (pdfHeight > pageHeight) {
+        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      } else {
+        pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, pdfHeight);
+      }
+
+      pdf.save('daily_financial_report.pdf');
+    }
+
+    const selectType = document.getElementById('typeSelect');
+      const reportButton = document.getElementById('btnLoadReport');
+
+      selectType.addEventListener('change', () => {
+        if (selectType.value !== '') {
+          reportButton.disabled = false;
+        } else {
+          reportButton.disabled = true;
+        }
+      });
+
+    function loadReportPage() {
+     // 2) On "Load Report" => call getDetailedReport()
+      document.getElementById("btnLoadReport").addEventListener("click", function() {
+        // clearExistingData();
+        getDetailedReport();
+        button.disabled = true;
+      });
+    }
+async function loadDropdowns() {
+        try {
+          const data = await fetch(API_URL + "vehicles");
+          const buses = await data.json();
+          console.log(buses);
+          const startBus = document.getElementById("startBus");
+          const stopBus = document.getElementById("stopBus");
+          buses.forEach(d => {
+              let opt = document.createElement("option");
+              opt.value = d.name;
+              opt.textContent = `PMT${d.name}`; 
+              startBus.appendChild(opt);
+            });
+            buses.forEach(d => {
+              let opt = document.createElement("option");
+              opt.value = d.name;
+              opt.textContent = `PMT${d.name}` 
+              stopBus.appendChild(opt);
+            });
+        }
+       catch(error) {
+        console.log(error)
+          customAlert("Failed to load Vehicles.");
+       } 
+      }
+
+    loadDropdowns()
+
+    function hideDashboardSections() {
+        const elementIds = [
+
+          "expensesSummaryCards",
+          "expensesInfoSection",
+          "reportInfoSection",
+          "reportBreakdownSection",
+          "reportBreakdownSection2",
+          "salesSummaryCards",
+          "incomeSummaryCards",
+          "incomeInfoSection",
+          "summaryBreakdownSection",
+          "reportContainer",
+          "summaryInfoSection"
+        ];
+
+        elementIds.forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.style.display = "none";
+        });
+
+        // Remove elements with class "myRow" using jQuery
+        if ($('.myRow').length) {
+          $('.myRow').remove();
+        }
+      }
+
+      // Call the function
+  function displayReport(data) {
+    hideDashboardSections()
+    console.log(data)
+    const container = document.getElementById('reportContainer');
+    container.style.display='block';
+    (data.dailyReport.forEach((day) => {
+      const reportEl = document.createElement('div');
+      reportEl.className = 'day-report';
+
+      reportEl.innerHTML = `
+          <h2>Date: ${formatDateLong(day.date)}</h2>
+          <h3>Incomes</h3>
+          <table>
+            <tr><th>Description</th><th>Amount</th></tr>
+            ${day.incomes.map(item => `
+              <tr>
+                <td>${item.description}</td>
+                <td>₦${item.amount}</td>
+              </tr>`).join('')}
+          </table>
+
+          <h3>Expenses</h3>
+          <table>
+            <tr><th>Description</th><th>Amount</th></tr>
+            ${day.expenses.map(item => `
+              <tr>
+                <td>${item.description}</td>
+                <td>₦${item.amount}</td>
+              </tr>`).join('')}
+          </table>
+
+          <div class="totals">
+            Total Income: ₦${day.totalIncome} <br>
+            Total Expense: ₦${day.totalExpense} <br>
+            Net Total: <span class="${day.netTotal >= 0 ? 'net-positive' : 'net-negative'}">
+              ₦${day.netTotal}
+            </span>
+          </div>
+        `;
+      container.appendChild(reportEl);
+    }));
+  }
+    async function getDetailedReport() {
+      const startDate = document.getElementById("startDate").value;
+      const endDate = document.getElementById("endDate").value;
+      const type = document.getElementById("typeSelect").value;
+      const startBus = document.getElementById("startBus").value;
+      const stopBus = document.getElementById("stopBus").value;
+
+      if (!startDate || !endDate ) {
+        customAlert("Please select a date range.");
+        return;
+      }
+      let endpoint = API_URL + "reports/" + `${type}` + `/?startDate=${startDate}&endDate=${endDate}
+      &startBus=${startBus}&stopBus=${stopBus}`;
+      if(!type) {
+        customAlert("Please select a valid type.");
+        return;
+      }
+          if (type === "bus-performance") {
+            try {
+              const res = await fetch(endpoint, {
+                  method: "GET", 
+                  headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${localStorage.getItem("token")}`  
+                  }
+            });
+            const data = await res.json();
+          // If no participants or error
+          hideDashboardSections()
+          if (data.error) {
+            customAlert(data.error);
+            return;
+          }
+          // Show result details
+          document.getElementById("reportInfoSection").style.display = "block";
+          document.getElementById("salesHeader").textContent = `From ${formatDateLong(startDate)} to ${formatDateLong(endDate)}`;
+          document.getElementById("busRange").textContent = `PMT${startBus} to PMT${stopBus}`;
+          document.getElementById("reportDate").textContent = formatDateLong(Date.now());
+
+          document.getElementById("reportBreakdownSection").style.display = "block";
+          const breakdownBody = document.getElementById("reportBreakdownBody");
+          (data || []).forEach(d => {
+            let row = document.createElement("tr");
+            row.setAttribute("class", "myRow");
+            let tdName = document.createElement("td");
+            tdName.textContent = `PMT${d.bus}`;
+            let tdIncome = document.createElement("td");
+            tdIncome.textContent = naira(d.totalIncome);
+            let tdPassengers = document.createElement("td");
+            tdPassengers.textContent = d.passengers;  
+            let tdExpenses = document.createElement("td");
+            tdExpenses.textContent = naira(d.totalExpenses);
+            let tdNet = document.createElement("td");
+            tdNet.textContent = naira(d.netIncome);
+            row.appendChild(tdName);
+            row.appendChild(tdIncome);
+            row.appendChild(tdPassengers);
+            row.appendChild(tdExpenses);
+            row.appendChild(tdNet);
+            breakdownBody.appendChild(row);
+          });         
+          }
+          catch (err) {
+            console.log(err);
+            customAlert(err);
+          }
+        }
+        else if (type === "incomes") {
+          try {
+            const res = await fetch(endpoint, {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${localStorage.getItem("token")}`
+              }
+            });
+            const data = await res.json()
+            hideDashboardSections()
+            if (data.error) {
+              customAlert(data.error)
+              return;
+            }
+            const totalAmount = (data[0]? data[0].totalIncome : 0) + 
+            (data[1]? data[1]?.totalIncome : 0) + (data[2]? data[2].totalIncome : 0);
+
+           //display current elements
+            document.getElementById("incomeInfoSection").style.display = "block";
+            document.getElementById("reportInfo").textContent = `From ${formatDateLong(startDate)} to ${formatDateLong(endDate)}`;
+            document.getElementById("incomeTotalGenerated").textContent = naira(totalAmount) || naira(0);
+            document.getElementById("incomeSummaryCards").style.display = "block";
+            document.getElementById("incomeHeader0").textContent = data[0]?._id || "Not Yet Available";
+            document.getElementById("incomeHeader1").textContent = data[1]?._id || "Not Yet Available";
+            document.getElementById("incomeHeader2").textContent = data[2]?._id || "Not Yet Available";
+            document.getElementById("incomeHeader0Val").textContent = data[0]? naira(data[0].totalIncome) : naira(0);
+            document.getElementById("incomeHeader1Val").textContent = data[1]? naira(data[1].totalIncome) : naira(0);
+            document.getElementById("incomeHeader2Val").textContent = data[2]? naira(data[2].totalIncome) : naira(0);
+            document.getElementById("totalIncomeSources").textContent = naira(totalAmount) || naira(0);
+          }
+          catch (error) {
+            customAlert(error)
+            return
+          }
+        }
+        else if (type === "expenses") {
+          try {
+                const res = await fetch(endpoint, {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${localStorage.getItem("token")}`
+              }
+            });
+            const data = await res.json()
+            if(data.error) {
+              customAlert(data.error);
+              hideDashboardSections();
+              return
+            }
+             //remove elements from other reports
+            hideDashboardSections()
+            const totalAmount = (data[0] ? data[0]?.totalExpenses : 0) +
+              (data[1] ? data[1]?.totalExpenses : 0) + (data[2] ? data[2]?.totalExpenses : 0);
+            document.getElementById("expensesInfoSection").style.display = "block";
+            document.getElementById("expensesHeaderMain").textContent = `From ${formatDateLong(startDate)} to ${formatDateLong(endDate)}`;
+            document.getElementById("expensesTotalAmount").textContent = naira(totalAmount) || 0;
+            document.getElementById("expensesSummaryCards").style.display = "block";
+            document.getElementById("expensesHeader0").textContent = data[0] ? data[0]?._id : "Not Available"
+            document.getElementById("expensesHeader1").textContent = data[1] ? data[1]?._id : "Not Available"
+            document.getElementById("expensesHeader2").textContent = data[2] ? data[2]?._id : "Not Available"
+            document.getElementById("expensesHeader0Val").textContent = data[0] ? naira(data[0]?.totalExpenses) : naira(0)
+            document.getElementById("expensesHeader1Val").textContent = data[1] ? naira(data[1]?.totalExpenses) : naira(0)
+            document.getElementById("expensesHeader2Val").textContent = data[2] ? naira(data[2]?.totalExpenses) : naira(0)
+            document.getElementById("expensesHeader3Val").textContent = naira(totalAmount) || 0;
+          }
+          catch(error) {
+              customAlert(error);
+              console.log(error)
+              return
+          }
+        }
+        else if(type === "summary") {
+          try {
+            const res = await fetch(endpoint, {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${localStorage.getItem("token")}`
+              }
+            });
+            const data = await res.json();
+            if (data.error) {
+              customAlert(data.error);
+              hideDashboardSections()
+              return;
+            }
+            //remove elements from other reports
+            hideDashboardSections();
+            document.getElementById("summaryBreakdownSection").style.display = "block";
+            document.getElementById("summaryInfoSection").style.display = "block";
+             document.getElementById("summaryHeader").textContent = `From ${formatDateLong(startDate)} to ${formatDateLong(endDate)}`;
+            const breakdownBody = document.getElementById("summarybreakdownBody");
+            (data|| []).forEach(d => {
+              let row = document.createElement("tr");
+              row.setAttribute('class', 'myRow')
+              let tdName = document.createElement("td");
+              tdName.textContent = formatDateLong(d.date);
+              let tdCount = document.createElement("td");
+              tdCount.textContent = naira(d.income);
+              let tdQty = document.createElement("td");
+              tdQty.textContent = naira(d.expense);
+              row.appendChild(tdName);
+              row.appendChild(tdCount);
+              row.appendChild(tdQty);
+              breakdownBody.appendChild(row);
+            });
+          }
+          catch(error) {
+            customAlert(error)
+            return
+          }
+        }
+        else if(type === "daily") {
+          try {
+            const res = await fetch(endpoint, {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${localStorage.getItem("token")}`
+              }
+            });
+            const data = await res.json()
+            if (data.error) {
+              customAlert(data.error);
+              hideDashboardSections()
+              return;
+            }
+            
+            displayReport(data);
+            return
+          }
+          catch (error) {
+            customAlert(error);
+            return
+          }
+
+        }
+        else if (type === "sales") {
+          try {
+            const res = await fetch(endpoint, {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${localStorage.getItem("token")}`
+              }
+            });
+            const data = await res.json();
+            hideDashboardSections();
+            if (data.error) {
+              customAlert(data.error);
+              return;
+            }
+            //remove elements from other reports
+            document.getElementById("salesBodySection").style.display = "block";
+            document.getElementById("salesOnlyHeader").textContent = `Sales from ${formatDateLong(startDate)} to ${formatDateLong(endDate)}`;
+            const breakdownBody = document.getElementById("salesBody");
+            (data || []).forEach(d => {
+              let row = document.createElement("tr");
+              row.setAttribute('class', 'myRow');
+              let tdDate = document.createElement("td");
+              tdDate.textContent = formatDateLong(d.createdAt);
+              let tdName = document.createElement("td");
+              tdName.textContent = d.name;
+              let tdAmount = document.createElement("td");
+              tdAmount.textContent = naira(d.items.reduce((acc, a) => {
+                const runTotal = a.itemId.sellingPrice * a.qty;
+                return acc + runTotal;
+              }, 0));
+
+              let tdSource = document.createElement("td");
+              tdSource.textContent = d.source;
+              row.appendChild(tdDate);
+              row.appendChild(tdName);
+              row.appendChild(tdSource);
+              row.appendChild(tdAmount);
+              breakdownBody.appendChild(row);
+            });
+          }
+          catch (error) {
+            console.log(error);
+            customAlert(error);
+            return;
+          }
+
+        }
+        }
+       
+  </script>
+<script>
+    /* Re-init DataTable after dynamic load if needed */
+    setTimeout(loadReportPage(), 100);
+</script>
+  

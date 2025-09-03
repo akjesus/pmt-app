@@ -1,0 +1,143 @@
+<div class="container mt-4"  style="overflow: scroll;">
+    <h2>View Reports</h2>
+    <!-- Filter Controls -->
+    <div>
+        <label for="typeSelect" class="form-label">Type:</label>
+        <select id="typeSelect" class="form-select" style="width: 200px; display: inline-block;">
+        <option value="">-- All Types --</option>
+        <option value="incomes">Income</option>
+        <option value="expenses">Expense</option>
+        <option value="inventories">Inventory</option>
+        </select>
+  
+        <label for="start-date">Start Date:</label>
+        <input type="date" id="start-date" class="form-control" style="width: 200px; display: inline-block;">
+
+        <label for="end-date">End Date:</label>
+        <input type="date" id="end-date" class="form-control" style="width: 200px; display: inline-block;">
+
+        <button class="btn btn-primary" id="btnLoadResults">Load Results</button>
+    </div>
+    <br>
+    <br>
+
+    <!-- DataTable for Results -->
+    <table id="reportsTable" class="display nowrap table table-striped" style="width:100%">
+        <thead>
+        <tr>
+            <th>Student</th>
+            <th>Registration #</th>
+            <th>Department</th>
+            <th>Level</th>
+            <th>Score</th>
+            <th>Max Score</th>
+        </tr>
+        </thead>
+        <tbody>
+        <!-- Filled dynamically -->
+        </tbody>
+    </table>
+</div>
+  <script>
+    let reportsTable;
+
+    function loadResultPage() {
+        // loadSessionsIntoSelect();
+        // loadCoursesIntoSelect();
+        // loadExamsIntoSelect();
+        // loadDepartmentsIntoSelect();
+
+      // Initialize DataTable
+      reportsTable = $("#reportsTable").DataTable({
+        dom: "Bfrtip",
+        buttons: [
+        "pageLength",
+        {
+          extend: "csvHtml5",
+          text: "CSV",
+          filename: function() {
+            return getDynamicFilename("csv");
+          }
+        },
+        {
+          extend: "excelHtml5",
+          text: "Excel",
+          filename: function() {
+            return getDynamicFilename("xlsx");
+          }
+        },
+        {
+          extend: "print",
+          text: "Print",
+          // 'filename' won't matter for 'print'
+        }
+      ],
+        responsive: true,
+        pageLength: 10,
+        lengthMenu: [
+          [10, 25, 50, -1],
+          [10, 25, 50, "All"]
+        ]
+      });
+  
+      // On "Load Results" button
+      document
+        .getElementById("btnLoadReports")
+        .addEventListener("click", function() {
+          loadReports();
+        });
+    
+    };
+
+
+    // 3) Load Reports => Refill the DataTable
+    function loadReports() {
+      const type = document.getElementById("typeSelect").value;
+      const startDate = document.getElementById("start-date").value;
+      const endDate = document.getElementById("end-date").value;
+   
+
+      if (!type) {
+        alert("Please select a report type.");
+        return;
+      }
+      let endpoint = API_URL + `reports/${type}`;
+      if (startDate) {
+        endpoint += `?start_date=${startDate}`;
+      }
+      if (endDate) {
+        endpoint += `&end_date=${endDate}`;
+      }
+
+      fetch(endpoint)
+        .then(res => res.json())
+        .then(data => {
+          // Clear old data
+          reportsTable.clear();
+
+          // Add new rows
+          data.forEach(r => {
+            const studentName = (r.first_name || "") + " " + (r.last_name || "");
+            // or r.studentName if your server merges them
+            reportsTable.row.add([
+              studentName.trim(),
+              r.registration_number || "",
+              r.department_name || "",
+              r.level_name || "",
+              r.score || 0,
+              r.max_score_obtainable || 0
+            ]);
+          });
+
+          reportsTable.draw();
+        })
+        .catch(err => {
+          console.error(err);
+          alert("Failed to load reports.");
+        });
+    }
+  </script>
+<script>
+    /* load the Page */
+    setTimeout(loadResultPage(), 1000);
+  </script>

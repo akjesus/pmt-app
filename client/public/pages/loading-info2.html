@@ -1,0 +1,291 @@
+
+
+<form id="loadinginfoForm" style="margin-top: 20px; padding: 20px;">
+    <h2>Loading Info Form</h2>
+    <table id="salesTable">
+        <thead>
+            <tr>
+                <th class="th" style="width: 250px;">Vehicle</th>
+                <th class="th" style="width: 250px;">Route</th>
+                <th class="th" style="width: 100px;">Fare</th>
+                <th class="th" style="width: 100px;">Fuel</th>
+                <th class="th" style="width: 100px;">Passengers</th>
+                <th class="th" style="width: 150px;" >Income</th>
+                <th class="th"> </th>
+            </tr>
+        </thead>
+        <tbody id="itemsBody"></tbody>
+    </table>
+    <br>
+    <button type="button" id="add-item" onclick="addRow()" class="btn btn-success" >Add Vehicle</button>
+    <br>
+    <br>
+    <p class="total">Grand Total: ₦<span id="totalAmount">0.00</span></p>
+
+   
+
+   
+
+</div>
+    <br>
+    <br>
+    <button type="submit" class="btn btn-primary" style="float:right">Save Data</button>
+</form>
+<script>
+    async function customAlert(message, options = {}) {
+            return new Promise((resolve) => {
+                const customAlert = document.getElementById('custom-alert');
+                const customAlertMessage = document.getElementById('custom-alert-message');
+                const customAlertOk = document.getElementById('custom-alert-ok');
+                const customAlertCancel = document.getElementById('custom-alert-cancel');
+
+                customAlertMessage.innerText = message;
+
+                if (options.confirm) {
+                    customAlertCancel.style.display = 'inline-block';
+                } else {
+                    customAlertCancel.style.display = 'none';
+                }
+
+                customAlert.style.display = 'block';
+                setTimeout(() => {
+                    customAlert.classList.add('show');
+                }, 10);
+
+                customAlertOk.addEventListener('click', () => {
+                    customAlert.classList.remove('show');
+                    setTimeout(() => {
+                        customAlert.style.display = 'none';
+                        resolve(true);
+                    }, 500);
+                });
+
+                customAlertCancel.addEventListener('click', () => {
+                    customAlert.classList.remove('show');
+                    setTimeout(() => {
+                        customAlert.style.display = 'none';
+                        resolve(false);
+                    }, 500);
+                });
+            });
+        }
+
+       let vehicles = [];
+       let fares = [];
+
+async function fetchVehicles() {
+    try {
+        const res = await fetch('http://127.0.0.1:8000/api/vehicles');
+        vehicles = await res.json();
+    } catch (err) {
+        console.error('Failed to fetch vehicles:', err);
+    }
+}
+
+// Fetch routes from API and fill the route column as a dropdown
+let routes = [];
+async function fetchRoutes() {
+    try {
+        const res = await fetch('http://127.0.0.1:8000/api/routes');
+        routes = await res.json();
+    } catch (err) {
+        console.error('Failed to fetch routes:', err);
+    }
+}
+
+    const button2 = document.getElementById('add-item');
+
+    function renderDatalist() {
+        let datalist = document.getElementById('vehicleList');
+        if (!datalist) {
+            datalist = document.createElement('datalist');
+            datalist.id = 'vehicleList';
+            document.body.appendChild(datalist);
+        }
+        datalist.innerHTML = vehicles.map(item =>
+            `<option value="${item.vehicleId}" data-id="${item._id}" data-price="${item.sellingPrice}">`
+        ).join('');
+    }
+
+    function addRow() {
+        const tbody = document.getElementById('itemsBody');
+        const row = document.createElement('tr');
+        row.innerHTML = `
+        <td></td>
+        <td></td>
+        <td><input type="number" class="fare-input price" style="width:70px;" /></td>
+        <td><input type="number" class="fare-input fuel" style="width:70px;" /></td>
+        <td><input type="number" class="qty" value="15" min="1" oninput="updateSubtotal(this)" style="width:70px;" /></td>
+        <td><input type="number" class="subtotal" readonly /></td>
+        <td><button type="button" onclick="removeRow(this)">Remove</button></td>`;
+        tbody.appendChild(row);
+        // Insert vehicle dropdown into the first cell
+        const vehicleCell = row.children[0];
+        vehicleCell.appendChild(renderVehicleDropdown(row));
+        // Insert route dropdown into the second cell
+        const routeCell = row.children[1];
+        routeCell.appendChild(renderRouteDropdown(row));
+    }
+
+    function removeRow(btn) {
+        btn.closest('tr').remove();
+        calculateTotal();
+    }
+
+    function renderVehicleDropdown(row) {
+        let select = document.createElement('select');
+        select.className = 'vehicle-select form-select';
+        select.innerHTML = '<option value="">Select Vehicle</option>' +
+            vehicles.map(vehicle => `<option value="${vehicle._id}" data-id="${vehicle._id}">${vehicle.vehicleId}</option>`).join('');
+        select.onchange = function() {
+            row.dataset.vehicleId = this.value;
+        };
+        return select;
+    }
+
+    function renderRouteDropdown(row) {
+        let select = document.createElement('select');
+        select.className = 'route-select form-select';
+        select.innerHTML = '<option value="">Select Route</option>' +
+            routes.map(route => `<option value="${route._id}">${route.desc}</option>`).join('');
+        select.onchange = async function() {
+            const routeId = this.value;
+            if (!routeId) return;
+            // Fetch fare for selected route
+            try {
+                const res = await fetch(`http://127.0.0.1:8000/api/routes/fares/${routeId}`);
+                const data = await res.json();
+                if (data && data.fareAmount) {
+                    // Set fare input in the same row
+                    const fareInput = row.querySelector('.fare-input');
+                    const fuelInput = row.querySelector('.fare-input.fuel');
+                    if (fareInput) {
+                        fareInput.value = data.fareAmount;
+                        fareInput.dataset.routeId = routeId;
+                    }
+                    if (fuelInput) {
+                        fuelInput.value = data.routeFuel || 0; // Set fuel amount if available
+                    }
+                    // Optionally update subtotal
+                    const qtyInput = row.querySelector('.qty');
+                    if (qtyInput) updateSubtotal(qtyInput);
+                }
+            } catch (err) {
+                console.error('Could not fetch fare for route:', routeId);
+            }
+        };
+        return select;
+    }
+
+    // Patch addRow to use route dropdown
+    const originalAddRow = addRow;
+    addRow = async function() {
+        if (!vehicles.length) await fetchVehicles();
+        if (!routes.length) await fetchRoutes();
+        const tbody = document.getElementById('itemsBody');
+        const row = document.createElement('tr');
+        row.setAttribute("class", "myRow");
+        row.innerHTML = `
+            <td style="width:250px;"></td>
+            <td style="width:250px;"></td>
+            <td><input type="number" class="fare-input price" style="width:100px;" /></td>
+            <td><input type="number" class="fare-input fuel" style="width:100px;" /></td>
+            <td><input type="number" class="qty" value="15" min="1" oninput="updateSubtotal(this)" style="width:100px;" /></td>
+            <td><input type="number" class="subtotal" readonly  style="width:150px;"/></td>
+            <td><button type="button" class="btn btn-danger" onclick="removeRow(this)">Remove</button></td>`;
+        tbody.appendChild(row);
+        // Insert vehicle dropdown into the first cell
+        const vehicleCell = row.children[0];
+        vehicleCell.appendChild(renderVehicleDropdown(row));
+        // Insert route dropdown into the second cell
+        const routeCell = row.children[1];
+        routeCell.appendChild(renderRouteDropdown(row));
+    };
+
+    function handleItemSearch(input) {
+        const val = input.value.trim().toLowerCase();
+        const row = input.closest('tr');
+        const match = vehicles.find(i => i.vehicleId.toLowerCase() === val);
+    }
+
+    function updateSubtotal(qtyInput) {
+        const row = qtyInput.closest('tr');
+        const price = parseFloat(row.querySelector('.price').value) || 0;
+        const fuel = parseFloat(row.querySelector('.fuel').value) || 0;
+        const qty = parseInt(qtyInput.value) || 0;
+        const subtotal = (price * qty) - (fuel);
+        row.querySelector('.subtotal').value = subtotal.toFixed(2);
+        calculateTotal();
+    }
+
+    function calculateTotal() {
+        let total = 0;
+        document.querySelectorAll('.subtotal').forEach(el => {
+            total += parseFloat(el.value) || 0;
+        });
+        document.getElementById('totalAmount').innerText = total.toFixed(2);
+    }
+
+    document.getElementById('loadinginfoForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const items = document.querySelectorAll('#itemsBody tr');
+        console.log('Items:', items);
+        //get the data from the rows
+        const payload = Array.from(items)
+            .map(row => {
+                const vehicleSelect = row.querySelector('.vehicle-select');
+                const routeSelect = row.querySelector('.route-select');
+                const fareInput = row.querySelector('.fare-input.price');
+                const fuelInput = row.querySelector('.fare-input.fuel');
+                const qtyInput = row.querySelector('.qty');
+                const subtotalInput = row.querySelector('.subtotal');
+
+                const vehicleId = vehicleSelect ? vehicleSelect.value : '';
+                const routeId = routeSelect ? routeSelect.value : '';
+                const fare = fareInput ? parseFloat(fareInput.value) || 0 : 0;
+                const fuel = fuelInput ? parseFloat(fuelInput.value) || 0 : 0;
+                const passengers = qtyInput ? parseInt(qtyInput.value) || 0 : 0;
+                const income = subtotalInput ? parseFloat(subtotalInput.value) || 0 : 0;
+
+                return {
+                    vehicleId,
+                    routeId,
+                    fare,
+                    fuel,
+                    passengers,
+                    income
+                };
+            })
+            .filter(x => x.vehicleId && x.routeId && x.passengers > 0);
+        console.log('Payload:', payload);
+        
+        if (!items.length) return customAlert('Add at least one vehicle.');
+        try {
+            const res = await fetch('http://127.0.0.1:8000/api/loading-info', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                 },
+                body: JSON.stringify(payload)
+            });
+            const resData = await res.json();
+            console.log(resData);
+            if(resData.error) {
+                customAlert(resData.error);
+                return;
+            }
+            customAlert('Loading information recorded!');
+            document.getElementById('loadinginfoForm').reset();
+            //remove all rows
+            document.getElementById('itemsBody').innerHTML = '';
+            document.getElementById('totalAmount').innerText = '0.00';
+
+
+        }
+        catch (error) {
+            console.error('Error preparing payload:', error);
+            customAlert('Error preparing loading info data.');
+            return;
+        }
+    });
+</script>
