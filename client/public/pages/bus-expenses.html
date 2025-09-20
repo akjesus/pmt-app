@@ -289,7 +289,6 @@
         fetch(API_URL + "vehicles")
           .then((res) => res.json())
           .then((buses) => {
-            console.log(buses);
             const busSel = document.getElementById("busSelect");
             buses.forEach(d => {
               let opt = document.createElement("option");

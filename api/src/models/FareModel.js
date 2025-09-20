@@ -16,6 +16,10 @@ const FareSchema = new Schema(
     routeFuel: {
       type: Number,
       required: true,
+    },
+    feeding: {
+      type: Number,
+      required: true,
     }
   },
   {

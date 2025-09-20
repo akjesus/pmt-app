@@ -8,6 +8,7 @@
                 <th class="th" style="width: 250px;">Route</th>
                 <th class="th" style="width: 100px;">Fare</th>
                 <th class="th" style="width: 100px;">Fuel</th>
+                <th class="th" style="width: 100px;">Feeding</th>
                 <th class="th" style="width: 100px;">Passengers</th>
                 <th class="th" style="width: 150px;" >Income</th>
                 <th class="th"> </th>
@@ -194,6 +195,7 @@ async function fetchRoutes() {
             <td style="width:250px;"></td>
             <td><input type="number" class="fare-input price" style="width:100px;" /></td>
             <td><input type="number" class="fare-input fuel" style="width:100px;" /></td>
+            <td><input type="number" class="fare-input feeding" style="width:100px;" /></td>
             <td><input type="number" class="qty" value="15" min="1" oninput="updateSubtotal(this)" style="width:100px;" /></td>
             <td><input type="number" class="subtotal" readonly  style="width:150px;"/></td>
             <td><button type="button" class="btn btn-danger" onclick="removeRow(this)">Remove</button></td>`;

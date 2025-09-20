@@ -58,10 +58,17 @@ exports.busPerformance = async (req, res) => {
         });
         // Add net income
         Object.keys(report).forEach(bus => {
+            if(report[bus].expenses) {
+                report[bus].totalExpenses = report[bus].expenses + report[bus].fuel;
+                report[bus].netIncome =
+                  report[bus].totalIncome - report[bus].totalExpenses;
+            }
+            else {
+                report[bus].totalExpenses = report[bus].fuel;
+                report[bus].netIncome =
+                  report[bus].totalIncome - report[bus].totalExpenses;
+            }
             
-            report[bus].totalExpenses = report[bus].expenses + report[bus].fuel;
-            report[bus].netIncome =
-              report[bus].totalIncome - report[bus].totalExpenses;
         });
 
         // Convert report object to array
